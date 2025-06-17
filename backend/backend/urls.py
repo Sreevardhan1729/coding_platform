@@ -18,7 +18,9 @@ from django.urls import path
 from users.views import RegisterView, LoginView
 from problems.views import ProblemListView, ProblemDetailView
 from submissions.views import SubmissionCreateView
+from . import views
 urlpatterns = [
+    path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path("api/auth/register/",RegisterView.as_view()),
     path("api/auth/login/", LoginView.as_view()),
