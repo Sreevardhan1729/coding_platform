@@ -24,10 +24,8 @@ function clearTokens() {
 
 export const api = axios.create({ baseURL: BASE_URL });
 
-/* ───────────────────────────────
-   1.  REQUEST INTERCEPTOR
-   • Inject Authorization header if access token exists
-──────────────────────────────── */
+/*    1.  REQUEST INTERCEPTOR
+   • Inject Authorization header if access token exists */
 api.interceptors.request.use((config) => {
   const token = getAccess();
   if (token) {
@@ -37,11 +35,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ───────────────────────────────
-   2.  RESPONSE INTERCEPTOR
+/*    2.  RESPONSE INTERCEPTOR
    • If we get 401 once, try to refresh
-   • Prevent infinite retry loops with a custom flag
-──────────────────────────────── */
+   • Prevent infinite retry loops with a custom flag*/
 api.interceptors.response.use(
   (res) => res,
   async (err: AxiosError<any>) => {
@@ -67,9 +63,7 @@ api.interceptors.response.use(
   }
 );
 
-/* ───────────────────────────────
-   3.  AUTH HELPERS
-──────────────────────────────── */
+/*    3.  AUTH HELPERS*/
 export const register = (d: {
   username: string;
   email: string;
@@ -84,9 +78,7 @@ export const login = async (d: { username: string; password: string }) => {
 
 export const logout = () => clearTokens();
 
-/* ───────────────────────────────
-   4.  PROBLEM & SUBMISSION ENDPOINTS
-──────────────────────────────── */
+/*  4.  PROBLEM & SUBMISSION ENDPOINTS*/
 export const getProblems = () => api.get("/problems/");
 export const getProblem = (slug: string) => api.get(`/problems/${slug}/`);
 
@@ -95,3 +87,16 @@ export const submit = (payload: {
   language: string;
   code: string;
 }) => api.post("/submit/", payload);
+
+/*  5.  AUTH STATE HELPERS*/
+export const isAuthenticated = () => !!getAccess();
+export const getCurrentUser = () => {
+  const token = getAccess();
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+};
