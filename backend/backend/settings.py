@@ -60,7 +60,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=2)}
+SIMPLE_JWT = {
+    'USER_ID_FIELD': '_id',
+    'USER_ID_CLAIM': 'user_id',
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=2),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    }
 
 
 TEMPLATES = [
