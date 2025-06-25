@@ -96,17 +96,7 @@ int main() {
     // Write your solution here
     
     return 0;
-}`,
-      javascript: `// Write your solution here
-function solve() {
-    // Read input
-    
-    // Process and solve
-    
-    // Print output
-}
-
-solve();`
+}`
     };
     setCode(templates[lang as keyof typeof templates] || '');
   };
@@ -365,7 +355,6 @@ solve();`
                 >
                   <option value="python">Python</option>
                   <option value="cpp">C++</option>
-                  <option value="javascript">JavaScript</option>
                 </select>
                 <button
                   onClick={handleSubmit}

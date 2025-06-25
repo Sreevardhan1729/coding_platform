@@ -11,7 +11,6 @@ interface EditorProps {
 const MONACO_LANGUAGE_MAP: { [key: string]: string } = {
   python: 'python',
   cpp: 'cpp',
-  javascript: 'javascript'
 };
 
 export default function Editor({ language, value, onChange, height = '400px' }: EditorProps) {
