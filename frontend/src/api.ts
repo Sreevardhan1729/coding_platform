@@ -1,7 +1,7 @@
 // src/api.ts
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
-const BASE_URL = "https://coding-platform-backend.vercel.app/api";
+const BASE_URL = "https://sreevardhan1729-coding-platform.hf.space/api";
 const ACCESS_KEY = "access";
 const REFRESH_KEY = "refresh";
 
