@@ -12,7 +12,7 @@ import {
   User,
   LogOut
 } from 'lucide-react';
-import { getProblem, submit, logout, getCurrentUser } from '../api';
+import { getProblem, submit, logout, getCurrentUser,run } from '../api';
 import Editor from '../components/Editor';
 
 interface Problem {
@@ -54,7 +54,12 @@ export default function ProblemDetail() {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('python');
   const [submitting, setSubmitting] = useState(false);
+  const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SubmissionResult | null>(null);
+  const [runResult, setRunResult] = useState<SubmissionResult | null>(null);
+  const [activeTab, setActiveTab] = useState("input");
+  const [input, setInput] = useState('');
+  const [inputRan, setInputRan] = useState('');
 
   useEffect(() => {
     if (slug) {
@@ -115,12 +120,13 @@ int main() {
 
     setSubmitting(true);
     setResult(null);
+    setActiveTab("verdict");
 
     try {
       const response = await submit({
         problem_slug: slug!,
         language,
-        code
+        code,
       });
       
       setResult(response.data);
@@ -134,6 +140,37 @@ int main() {
       toast.error(error.response?.data?.message || 'Submission failed');
     } finally {
       setSubmitting(false);
+    }
+  };
+  const handleRun = async () => {
+    if (!code.trim()) {
+      toast.error('Please write some code before submitting');
+      return;
+    }
+
+    setRunning(true);
+    setRunResult(null);
+    setActiveTab("output");
+    setInputRan(input);
+    try {
+      const response = await run({
+        problem_slug: slug!,
+        language,
+        code,
+        input
+      });
+      
+      setRunResult(response.data);
+      
+      if (response.data.verdict === 'Accepted' || response.data.verdict === 'Pending') {
+        toast.success('🎉 Code Executed!');
+      } else {
+        toast.error('Some Error Occurred. Check the results below.');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Execution failed');
+    } finally {
+      setRunning(false);
     }
   };
 
@@ -273,9 +310,35 @@ int main() {
                 </div>
               </div>
             </div>
-
+            <div className="flex mt-4 space-x-2">
+              {["input", "output", "verdict"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-3 py-1 rounded-t font-medium text-sm ${
+                    activeTab === tab
+                      ? "bg-gray-50 text-gray-600"
+                      : "bg-blue-600 text-white"
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+            {activeTab === 'input' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Custom Input</h3>
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  rows={6}
+                  placeholder="Enter custom input here"
+                  className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 font-mono text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            )}
             {/* Results */}
-            {result && (
+            {result && activeTab=="verdict" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">Submission Results</h3>
@@ -341,6 +404,55 @@ int main() {
                 </div>
               </div>
             )}
+            {runResult && activeTab=="output" && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Submission Results</h3>
+                  <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    runResult.verdict === 'Accepted' || runResult.verdict === 'Pending' 
+                      ? 'bg-white text-white' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {runResult.verdict === 'Accepted' ? (
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                    ) : (
+                      <XCircle className="h-4 w-4 mr-1" />
+                    )}
+                    {runResult.verdict}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {runResult.results.map((testResult, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-medium text-gray-700">Test Case {index + 1}</h4>
+                        
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600 font-medium mb-1">Input</p>
+                          <pre className="bg-gray-50 p-2 rounded font-mono text-gray-800 overflow-x-auto">
+                            {inputRan}
+                          </pre>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 font-medium mb-1">Your Output</p>
+                          <pre className={`p-2 rounded font-mono overflow-x-auto ${
+                            testResult.status === 'Accepted' || testResult.status === 'Pending' 
+                              ? 'bg-green-50 text-green-800' 
+                              : 'bg-red-50 text-red-800'
+                          }`}>
+                            {testResult.output || '(no output)'}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Code Editor */}
@@ -357,6 +469,23 @@ int main() {
                   <option value="cpp">C++</option>
                 </select>
                 <button
+                  onClick={handleRun}
+                  disabled={running}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  {running ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></div>
+                      Running...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Run
+                    </>
+                  )}
+                </button>
+                <button
                   onClick={handleSubmit}
                   disabled={submitting}
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
@@ -364,7 +493,7 @@ int main() {
                   {submitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></div>
-                      Running...
+                      Submitting...
                     </>
                   ) : (
                     <>

@@ -87,6 +87,12 @@ export const submit = (payload: {
   language: string;
   code: string;
 }) => api.post("/submit/", payload);
+export const run = (payload: {
+  problem_slug: string;
+  language: string;
+  code: string;
+  input: string;
+}) => api.post("/run/", payload);
 
 /*  5.  AUTH STATE HELPERS*/
 export const isAuthenticated = () => !!getAccess();
