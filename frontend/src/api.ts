@@ -1,7 +1,7 @@
 // src/api.ts
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
-const BASE_URL = "http://127.0.0.1:8000/api";
+const BASE_URL = "https://sreevardhan1729-coding-platform.hf.space/api";
 const ACCESS_KEY = "access";
 const REFRESH_KEY = "refresh";
 
