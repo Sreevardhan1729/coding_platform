@@ -1,7 +1,7 @@
 // src/api.ts
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
-const BASE_URL = "https://sreevardhan1729-coding-platform.hf.space/api";
+const BASE_URL = "http://127.0.0.1:8000/api";
 const ACCESS_KEY = "access";
 const REFRESH_KEY = "refresh";
 
@@ -93,6 +93,11 @@ export const run = (payload: {
   code: string;
   input: string;
 }) => api.post("/run/", payload);
+export const aiHelp = (payload: {
+  problem_slug: string;
+  code: string;
+  language: string;
+}) => api.post("/ai-helper/", payload);
 
 /*  5.  AUTH STATE HELPERS*/
 export const isAuthenticated = () => !!getAccess();

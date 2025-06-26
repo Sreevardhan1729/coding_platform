@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, 
   Play, 
@@ -10,9 +11,10 @@ import {
   Code,
   Copy,
   User,
-  LogOut
+  LogOut,
+  Zap
 } from 'lucide-react';
-import { getProblem, submit, logout, getCurrentUser,run } from '../api';
+import { getProblem, submit, logout, getCurrentUser,run,aiHelp } from '../api';
 import Editor from '../components/Editor';
 
 interface Problem {
@@ -60,6 +62,8 @@ export default function ProblemDetail() {
   const [activeTab, setActiveTab] = useState("input");
   const [input, setInput] = useState('');
   const [inputRan, setInputRan] = useState('');
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [aiResult, setAiResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (slug) {
@@ -120,7 +124,7 @@ int main() {
 
     setSubmitting(true);
     setResult(null);
-    setActiveTab("verdict");
+    
 
     try {
       const response = await submit({
@@ -140,8 +144,34 @@ int main() {
       toast.error(error.response?.data?.message || 'Submission failed');
     } finally {
       setSubmitting(false);
+      setActiveTab("verdict");
     }
   };
+  const handleAIHelp = async () =>{
+    if (!code.trim()) {
+      toast.error('Please write some code to get AI help');
+      return;
+    }
+    setLoadingAI(true);
+    setAiResult(null);
+    try{
+      const response = await aiHelp({
+        problem_slug: slug!,
+        language,
+        code,
+      })
+      console.log(2)
+      setAiResult(response.data.suggestions);
+      toast.success('AI help received successfully!');
+    }
+    catch (error: any) {
+      toast.error(error.response?.data?.message || 'AI help failed');
+    } finally {
+      setLoadingAI(false);
+      setActiveTab("ai");
+    }
+
+  }
   const handleRun = async () => {
     if (!code.trim()) {
       toast.error('Please write some code before submitting');
@@ -150,7 +180,7 @@ int main() {
 
     setRunning(true);
     setRunResult(null);
-    setActiveTab("output");
+    
     setInputRan(input);
     try {
       const response = await run({
@@ -171,6 +201,7 @@ int main() {
       toast.error(error.response?.data?.message || 'Execution failed');
     } finally {
       setRunning(false);
+      setActiveTab("output");
     }
   };
 
@@ -311,7 +342,7 @@ int main() {
               </div>
             </div>
             <div className="flex mt-4 space-x-2">
-              {["input", "output", "verdict"].map((tab) => (
+              {["input", "output", "verdict","ai"].map((tab) => (
                 <button
                   key={tab}
                   className={`px-3 py-1 rounded-t font-medium text-sm ${
@@ -321,7 +352,7 @@ int main() {
                   }`}
                   onClick={() => setActiveTab(tab)}
                 >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {tab==='ai' ? 'AI Help' : tab.charAt(0).toUpperCase()+tab.slice(1)}
                 </button>
               ))}
             </div>
@@ -453,6 +484,20 @@ int main() {
                 </div>
               </div>
             )}
+            {activeTab==='ai' && (
+              <div className="bg-white rounded-2xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4">AI Assistance</h3>
+                {loadingAI
+                  ? <p>Loading AI suggestions...</p>
+                  : <div className="whitespace-pre-wrap prose prose-sm max-w-7xl overflow-auto text-gray-800">
+                      <ReactMarkdown>
+                        {aiResult || 'No suggestions yet.'}
+                      </ReactMarkdown>
+                    </div>
+                  // <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800">{aiResult || 'No suggestions yet.'}</pre>
+                }
+              </div>
+            )}
           </div>
 
           {/* Code Editor */}
@@ -485,6 +530,7 @@ int main() {
                     </>
                   )}
                 </button>
+                
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
@@ -501,6 +547,11 @@ int main() {
                       Submit
                     </>
                   )}
+                </button>
+                <button onClick={handleAIHelp} disabled={loadingAI}
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all">
+                  {loadingAI ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"/> : <Zap className="h-4 w-4 mr-2"/>}
+                  {loadingAI ? 'Thinking...' : 'AI Help'}
                 </button>
               </div>
             </div>
