@@ -13,6 +13,7 @@ import {
   User,
   Zap,
   Trophy,
+  UploadCloud,
   Target
 } from 'lucide-react';
 import { getProblems, logout, getCurrentUser } from '../api';
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDifficulty, setFilterDifficulty] = useState('all');
   const navigate = useNavigate();
+  
   const user = getCurrentUser();
 
   useEffect(() => {
@@ -69,7 +71,6 @@ export default function Dashboard() {
     problem.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Mock difficulty assignment based on problem characteristics
   const getDifficulty = (problem: Problem) => {
     const testCaseCount = problem.test_cases?.length || 0;
     if (testCaseCount <= 2) return 'Easy';
@@ -111,6 +112,15 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              {user?.isAdmin && (
+                 <Link
+                   to="/upload-problem"
+                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+                 >
+                   <UploadCloud className="h-4 w-4 mr-2" />
+                   Upload Problem
+                 </Link>
+               )}
               <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
                 <User className="h-4 w-4 text-gray-500 mr-2" />
                 <span className="text-sm font-medium text-gray-700">
@@ -142,36 +152,6 @@ export default function Dashboard() {
               </p>
             </div>
             
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="flex items-center">
-                  <Trophy className="h-6 w-6 text-yellow-300 mr-3" />
-                  <div>
-                    <p className="text-sm text-blue-100">Problems Solved</p>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="flex items-center">
-                  <Target className="h-6 w-6 text-green-300 mr-3" />
-                  <div>
-                    <p className="text-sm text-blue-100">Success Rate</p>
-                    <p className="text-2xl font-bold">--</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="flex items-center">
-                  <Zap className="h-6 w-6 text-orange-300 mr-3" />
-                  <div>
-                    <p className="text-sm text-blue-100">Current Streak</p>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                </div>
-              </div>
-            </div>
             
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
