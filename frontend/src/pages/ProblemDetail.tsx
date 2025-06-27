@@ -54,7 +54,7 @@ export default function ProblemDetail() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('python');
+  const [language, setLanguage] = useState('cpp');
   const [submitting, setSubmitting] = useState(false);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SubmissionResult | null>(null);
@@ -465,7 +465,7 @@ int main() {
                         <div>
                           <p className="text-gray-600 font-medium mb-1">Input</p>
                           <pre className="bg-gray-50 p-2 rounded font-mono text-gray-800 overflow-x-auto">
-                            {inputRan}
+                            {inputRan === '' ? '(no input)' : inputRan}
                           </pre>
                         </div>
                         <div>
