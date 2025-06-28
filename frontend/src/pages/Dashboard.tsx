@@ -65,18 +65,26 @@ export default function Dashboard() {
     toast.success('Logged out successfully');
     navigate('/login');
   };
-
-  const filteredProblems = problems.filter(problem =>
-    problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    problem.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  
   const getDifficulty = (problem: Problem) => {
     const testCaseCount = problem.test_cases?.length || 0;
     if (testCaseCount <= 2) return 'Easy';
     if (testCaseCount <= 4) return 'Medium';
     return 'Hard';
   };
+  const filteredProblems = problems
+    .filter(problem => {
+      const searchTermMatch =
+        problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const curr = getDifficulty(problem)
+      const difficultyMatch =
+        filterDifficulty === 'all' ||
+        curr === filterDifficulty;
+
+      return searchTermMatch && difficultyMatch;
+    });
+
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -181,9 +189,9 @@ export default function Dashboard() {
                 className="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-8 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Difficulties</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                 <Filter className="h-4 w-4 text-gray-400" />
